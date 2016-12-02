@@ -1,0 +1,123 @@
+$fade-out: 450ms;
+
+.sdk-loading {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 9;
+    display: block;
+    background-color: #fff;
+    opacity: 0;
+    transition: opacity $fade-out linear;
+    &.is-active {
+        opacity: 1;
+        transition: opacity 0ms linear;
+    }
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: $native-navigation-bar-height;
+        background-color: #000;
+    }
+    &.is-splash {
+        &::before {
+            display: none;
+        }
+    }
+}
+.sdk-loading__message {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+    pointer-events: none;
+    box-sizing: content-box;
+    overflow: hidden;
+}
+.sdk-loading__list {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+}
+.sdk-loading__item {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #5a463f;
+    // overflow: hidden;
+    // white-space: nowrap;
+    word-wrap: break-word;
+    word-break: break-all;
+    // text-overflow: ellipsis;
+}
+.sdk-loading__progress {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20%;
+    padding-top: 20%;
+    transition: transform 450ms linear $fade-out;
+    transform: translateX(-50%) translateY(-50%) scale(0);
+    border-radius: 20%;
+    overflow: hidden;
+    background-color: #fff;
+    cursor: pointer;
+    .is-active & {
+        transition-delay: 0ms;
+        transform: translateX(-50%) translateY(-50%) scale(1);
+    }
+    &:active {
+        .sdk-loading__cover,
+        .sdk-loading__status {
+            opacity: .75;
+        }
+    }
+}
+.sdk-loading__subline,
+.sdk-loading__icon,
+.sdk-loading__cover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+.sdk-loading__subline {
+    background-image: url(../img/subline.png);
+}
+.sdk-loading__cover {
+    background-image: url(../img/cover.png);
+    opacity: .6;
+}
+.sdk-loading__icon {
+    opacity: 0;
+    transition: opacity 200ms linear 200ms;
+    &[style] {
+        opacity: 1;
+    }
+}
+.sdk-loading__status {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    width: 53%;
+    height: 53%;
+    background-color: #000;
+    opacity: .6;
+    border-radius: 50%;
+}
+.sdk-loading__splash {
+    width: 100%;
+    height: 100%;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}

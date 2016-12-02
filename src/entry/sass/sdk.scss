@@ -1,0 +1,28 @@
+@import "base";
+@import "normalize";
+
+$native-navigation-bar-height: 24px;
+
+@import "loading";
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+body {
+    position: relative;
+    * {
+        outline: none;
+        &:not(input, textarea) {
+            user-select: none;
+    		-webkit-touch-callout: none;
+        }
+    }
+    & > * {
+        display: none;
+    }
+}
