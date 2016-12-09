@@ -1,0 +1,22 @@
+{
+  "en": [
+      "Add [Toast] feature.",
+      "Add [Dialog] feature.",
+      "Add [Action Sheet] feature.",
+      "Select [Language] feature.",
+      "Select [Splash] feature.",
+      "Add [Reload]、[Restart]、[Restore] feature.",
+      "Select [Version] feature.",
+      "Check [Change Log] feature."
+  ],
+  "zh": [
+      "增加唤起[Toast]功能",
+      "增加唤起[Dialog]功能",
+      "增加唤起[Action Sheet]功能",
+      "增加切换[Language]功能",
+      "增加切换[Splash]功能",
+      "增加[Reload]、[Restart]、[Restore]功能",
+      "增加切换[Version]功能",
+      "增加查看[Change Log]功能"
+  ]
+}
