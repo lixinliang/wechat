@@ -25,12 +25,12 @@
     "colors": "^1.1.2",
     "css-loader": "^0.23.1",
     "extract-text-webpack-plugin": "^1.0.1",
-    "fastclick": "^1.0.6",
     "file-loader": "^0.8.5",
     "fs-extra": "^0.30.0",
     "inline-source": "^5.0.0",
     "inquirer": "^1.1.3",
     "iscroll": "^5.2.0",
+    "loader-utils": "^0.2.16",
     "micro-definition": "0.0.4",
     "micro-storage": "0.0.9",
     "minifycss-loader": "^0.2.0",
@@ -50,6 +50,6 @@
     "vue-touch": "^1.1.0",
     "webpack": "^1.13.2",
     "webpack-dev-server": "^1.16.2",
-    "weui": "^1.0.2"
+    "weui": "^1.1.0"
   }
 }
