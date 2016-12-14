@@ -1,7 +1,7 @@
 <script>
-import navbar from './navbar.vue';
-import tabbar from './tabbar.vue';
 import popout from './popout.vue';
+import selectVersion from './select-version.vue';
+import selectLanguage from './select-language.vue';
 
 const noop = () => {};
 
@@ -10,14 +10,30 @@ export default {
 		return {
 			mask : '',
 			display : true,
-			topbarHeight : '0px',
-			tabbarHeight : '0px',
+			displaySelectVersion : false,
+			displaySelectLanguage : false,
 		};
 	},
+	ready () {
+		this.tabbarController = noop;
+		this.$router.afterEach(( transition ) => {
+			this.tabbarController.call(null, transition);
+			if (/\/select-version/.test(transition.to.path)) {
+				this.displaySelectVersion = true;
+				return;
+			}
+			if (/\/select-language$/.test(transition.to.path)) {
+				this.displaySelectLanguage = true;
+				return;
+			}
+			this.displaySelectVersion = false;
+			this.displaySelectLanguage = false;
+		});
+	},
 	components : {
-		navbar,
-		tabbar,
 		popout,
+		selectVersion,
+		selectLanguage,
 	},
 	methods : {
 		close () {
@@ -86,11 +102,12 @@ export default {
 
 <template>
 	<div class="app" v-show="display">
-		<router-view class="app-content" v-el:content
-		 v-bind:style="{ 'padding-top' : topbarHeight, 'padding-bottom' : tabbarHeight }"></router-view>
-		<navbar class="app-navigation" v-ref:navbar v-bind:height="topbarHeight"></navbar>
-		<tabbar class="app-navigation" v-ref:tabbar v-bind:height.sync="tabbarHeight"></tabbar>
-		<div class="app-mask {{ mask }}" v-el:mask v-touch:tap="close"></div>
+		<div class="app-content">
+			<router-view class="app-page"></router-view>
+			<select-version class="app-page" v-if="displaySelectVersion"></select-version>
+			<select-language class="app-page" v-if="displaySelectLanguage"></select-language>
+		</div>
+		<div class="app-mask {{ mask }}" v-touch:tap="close"></div>
 		<popout class="app-popout" v-ref:popout></popout>
 	</div>
 </template>
@@ -109,16 +126,14 @@ export default {
 	.app-content {
 		z-index: 1;
 	}
-	.app-navigation {
+	.app-mask {
 		z-index: 2;
 	}
-	.app-mask {
+	.app-popout {
 		z-index: 3;
 	}
-	.app-popout {
-		z-index: 4;
-	}
 	.app-content,
+	.app-page,
 	.app-mask {
 		top: 0;
 		left: 0;
@@ -127,8 +142,9 @@ export default {
 		overflow: hidden;
 		position: absolute;
 	}
-	.app-content {
+	.app-page {
 		box-sizing: border-box;
+		z-index: 1;
 	}
 	.app-mask {
 		opacity: 0;
