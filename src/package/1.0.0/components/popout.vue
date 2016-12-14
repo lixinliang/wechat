@@ -40,7 +40,7 @@ export default {
 </script>
 
 <template>
-    <div class="popout">
+    <div>
         <div class="weui-toast" v-show="successToastDisplay" transition="fade">
             <i class="weui-icon-success-no-circle weui-icon_toast"></i>
             <p class="weui-toast__content">{{ successToastContent }}</p>
