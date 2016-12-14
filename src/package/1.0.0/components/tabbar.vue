@@ -7,11 +7,15 @@ export default {
 		};
 	},
 	ready () {
-		this.height = '58px';
-		// this.bindEvent();
-		this.$router.afterEach(( transition ) => {
-		    this.path = transition.to.path;
-		});
+		this.height = '50px';
+		this.path = this.$route.path.split('/')[1];
+		this.$root.tabbarController = ( transition ) => {
+			this.path = transition.to.path.split('/')[1];
+		};
+	},
+	beforeDestroy () {
+		const noop = () => {};
+		this.$root.tabbarController = noop;
 	},
 	methods : {
 		go ( path ) {
@@ -26,34 +30,34 @@ export default {
         <div class="weui-tab">
             <div class="weui-tabbar">
                 <div v-el:chats
-					v-touch:tap="go('chats')"
-					v-touch:press="go('chats')"
+					v-touch:tap="go('/chats')"
+					v-touch:press="go('/chats')"
 					class="weui-tabbar__item"
-					v-bind:class="{ 'weui-bar__item_on' : path == '/chats' }">
+					v-bind:class="{ 'weui-bar__item_on' : path == 'chats' }">
                     <div class="weui-tabbar__icon"><i class="i-chats"></i></div>
                     <p class="weui-tabbar__label">Chats</p>
                 </div>
                 <div v-el:contacts
-					v-touch:tap="go('contacts')"
-					v-touch:press="go('contacts')"
+					v-touch:tap="go('/contacts')"
+					v-touch:press="go('/contacts')"
 					class="weui-tabbar__item"
-					v-bind:class="{ 'weui-bar__item_on' : path == '/contacts' }">
+					v-bind:class="{ 'weui-bar__item_on' : path == 'contacts' }">
                     <div class="weui-tabbar__icon"><i class="i-contacts"></i></div>
                     <p class="weui-tabbar__label">Contacts</p>
                 </div>
                 <div v-el:discover
-					v-touch:tap="go('discover')"
-					v-touch:press="go('discover')"
+					v-touch:tap="go('/discover')"
+					v-touch:press="go('/discover')"
 					class="weui-tabbar__item"
-					v-bind:class="{ 'weui-bar__item_on' : path == '/discover' }">
+					v-bind:class="{ 'weui-bar__item_on' : path == 'discover' }">
                     <div class="weui-tabbar__icon"><i class="i-discover"></i></div>
                     <p class="weui-tabbar__label">Discover</p>
                 </div>
                 <div v-el:me
-					v-touch:tap="go('me')"
-					v-touch:press="go('me')"
+					v-touch:tap="go('/me')"
+					v-touch:press="go('/me')"
 					class="weui-tabbar__item"
-					v-bind:class="{ 'weui-bar__item_on' : path == '/me' }">
+					v-bind:class="{ 'weui-bar__item_on' : path == 'me' }">
                     <div class="weui-tabbar__icon"><i class="i-me"></i></div>
                     <p class="weui-tabbar__label">Me</p>
                 </div>
@@ -71,6 +75,7 @@ export default {
 		display: block;
 		overflow: hidden;
 		position: absolute;
+		z-index: 2;
     }
 	.weui-tabbar__icon {
 		position: relative;
