@@ -14,21 +14,22 @@ const sourcePath = path.join(__dirname, '../src');
 const outputPath = path.join(__dirname, '../dist');
 
 let start = () => {
+    function reboot ( err ) {
+        if (/listen EADDRINUSE/.test(err.toString())) {
+            console.log(`\n${ port } is aleary in use. Ctrl+C to leave or input a PID to kill：`.green);
+            Promise.resolve(`lsof -i tcp:${ port }`).then(step4).then(step5).then(( pid ) => {
+                return `kill ${ pid }`;
+            }).then(step4).catch(( err ) => {
+                console.log(err.toString().red);
+            }).then(start);
+        } else {
+            console.log(err.toString().red);
+        }
+    }
     if (task == 'dev') {
         step3().then(() => {
             return `webpack-dev-server --inline --quiet --devtool eval --progress --colors --content-base ./src/ --hot --config ./webpack/webpack.dev.js --host 0.0.0.0 --port ${ port }`;
-        }).then(step4).catch(( err ) => {
-            if (/listen EADDRINUSE/.test(err.toString())) {
-                console.log(`\n${ port } is aleary in use. Ctrl+C to leave or input a PID to kill：`.green);
-                Promise.resolve(`lsof -i tcp:${ port }`).then(step4).then(step5).then(( pid ) => {
-                    return `kill ${ pid }`;
-                }).then(step4).catch(( err ) => {
-                    console.log(err.toString().red);
-                }).then(start);
-            } else {
-                console.log(err.toString().red);
-            }
-        });
+        }).then(step4).catch(reboot);
     }
     if (task == 'build') {
         if (buildjs) {
@@ -60,7 +61,7 @@ let start = () => {
  * @return {Promise} remove_success
  */
 let step1 = () => new Promise(( resolve, reject ) => {
-    fse.remove(path.join(outputPath, '*'), ( err ) => {
+    fse.remove(path.join(outputPath), ( err ) => {
         if (err) {
             reject(err);
             return;
