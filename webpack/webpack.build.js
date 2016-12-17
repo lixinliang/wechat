@@ -6,11 +6,10 @@ let fse = require('fs-extra');
 let moment = require('moment');
 let webpack = require('webpack');
 let autoprefixer = require('autoprefixer');
-let ExtractTextWebpackPlugin = require('extract-text-webpack-plugin');
-
 let HtmlWebpackPlugin = require('html-webpack-plugin');
+let ExtractTextWebpackPlugin = require('extract-text-webpack-plugin');
 let HtmlReplaceWebpackPlugin = require('html-replace-webpack-plugin');
-let HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin');
+let HtmlInlineSourceWebpackPlugin = require('html-inline-source-webpack-plugin');
 
 const entry = require('./webpack.entry.json');
 const packageJson = require('../package.json');
@@ -59,7 +58,7 @@ let config = {
             };
         }
     })(),
-    extensions : ['.vue', '.js', '.json', '.scss'],
+    extensions : ['.vue', '.js', '.coffee', '.json', '.scss'],
     resolve : {
         alias,
     },
@@ -90,6 +89,14 @@ let config = {
                     // plugins : ['transform-remove-strict-mode'],
                     // plugins: ['transform-runtime'],
                 },
+            },
+            {
+                test : /\.coffee/,
+                loader : 'coffee',
+            },
+            {
+                test : /\.(coffee\.md|litcoffee)$/,
+                loader : 'coffee?literate',
             },
         ],
     },
@@ -138,25 +145,13 @@ if (process.argv.build == 'js') {
     }));
     config.plugins.push(new ExtractTextWebpackPlugin('css/[name].css'));
     fs.readdirSync(sourcePath).forEach(( filename ) => {
-        if (/\.appcache$/.test(filename)) {
+        let template = path.join(sourcePath, filename);
+        if (/\.(appcache|html)$/.test(filename)) {
             config.plugins.push(new HtmlWebpackPlugin({
                 minify : false,
                 inject : false,
                 filename,
-                template : path.join(sourcePath, filename),
-            }));
-        }
-        if (/\.html$/.test(filename)) {
-            let template = path.join(sourcePath, filename);
-            let ejs = path.join(template, '..', `${ path.basename(filename, '.html') }.ejs`);
-            if (fs.existsSync(ejs)) {
-                template = ejs;
-            }
-            config.plugins.push(new HtmlWebpackPlugin({
-                minify : false,
-                filename,
                 template,
-                inlineSource : '.(js|css)$',
             }));
         }
     });
@@ -168,47 +163,7 @@ if (process.argv.build == 'js') {
         });
     });
     config.plugins.push(new HtmlReplaceWebpackPlugin(result));
-    config.plugins.push(new HtmlWebpackInlineSourcePlugin());
-    // sort
-    config.plugins.push({
-        apply ( compiler ) {
-            compiler.plugin('compilation', ( compilation ) => {
-                compilation.plugin('html-webpack-plugin-alter-asset-tags', ( htmlPluginData, callback ) => {
-                    if (/\.html$/.test(htmlPluginData.plugin.options.filename)) {
-                        let top = [];
-                        let head = [];
-                        let body = [];
-                        htmlPluginData.head.concat(htmlPluginData.body).forEach(( source ) => {
-                            if (source.tagName == 'link') {
-                                head.push(source);
-                            }
-                            if (source.tagName == 'script') {
-                                if (/\bmicro-(storage|definition)\.js$/.test(source.attributes.src)) {
-                                    top.push(source);
-                                } else {
-                                    body.push(source);
-                                }
-                            }
-                        });
-                        htmlPluginData.head = top.concat(head);
-                        htmlPluginData.body = body;
-                    }
-                    callback(null, htmlPluginData);
-                });
-            });
-        },
-    });
-    config.plugins.push(new HtmlWebpackInlineSourcePlugin());
-    // remove
-    config.plugins.push({
-        apply ( compiler ) {
-            compiler.plugin('done', ( stats ) => {
-                let outputPath = path.join(compiler.context, compiler.outputPath);
-                fse.removeSync(path.join(outputPath, 'js'));
-                fse.removeSync(path.join(outputPath, 'css'));
-            });
-        },
-    });
+    config.plugins.push(new HtmlInlineSourceWebpackPlugin());
 }
 
 module.exports = config;
