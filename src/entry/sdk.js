@@ -123,16 +123,15 @@ function main () {
         });
     } else {
         sdk.loading.report('正在进入开发通道...');
-        const url = sdk.packages[app.version].path;
         let link = document.createElement('link');
         let script = document.createElement('script');
-        script.src = url;
+        script.src = `js/package/${ app.version }.js`;
         script.onload = () => {
             document.head.removeChild(script);
             sdk.loading.hide();
         };
         link.rel = 'stylesheet';
-        link.href = url.replace(/\.js$/, '.css');
+        link.href = `css/package/${ app.version }.css`;
         document.head.appendChild(link);
         document.head.appendChild(script);
     }
