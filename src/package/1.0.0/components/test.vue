@@ -1,4 +1,5 @@
 <script>
+import tabbar from './tabbar.vue';
 import topbar from './topbar.vue';
 import scrollView from './scroll-view.vue';
 
@@ -8,11 +9,16 @@ let confirmDialogCounter = [0, 0];
 function getChangelog ( packages ) {
     let result = {};
     for (let version in packages) {
-        let moment = new Date(packages[version].timestamp);
-        let yyyy = moment.getFullYear();
-        let mm = ('0' + moment.getMonth() + 1).slice(-2);
-        let dd = ('0' + moment.getDate()).slice(-2);
-        result[`${ version } - ${ yyyy }/${ mm }/${ dd }`] = packages[version].changelog[app.language];
+        let time = parseInt(packages[version].timestamp);
+        let moment = new Date(time);
+        if (time) {
+            let yyyy = moment.getFullYear();
+            let mm = ('0' + moment.getMonth() + 1).slice(-2);
+            let dd = ('0' + moment.getDate()).slice(-2);
+            result[`${ version } - ${ yyyy }/${ mm }/${ dd }`] = packages[version].changelog[app.language];
+        } else {
+            result[`${ version } - ${ moment }`] = packages[version].changelog[app.language];
+        }
     }
     // console.log(result);
     return result;
@@ -22,10 +28,11 @@ export default {
     data () {
 		return {
             title : 'test',
+            tabbarHeight : '',
+            topbarHeight : '',
             version : app.version,
             language : app.language,
             changelog : getChangelog(sdk.packages),
-            // options : Object.keys(sdk.packages),
             splashStatus : 'splash-empty',
             selectedActionSheet : '',
             selectedAlertDialog : '',
@@ -33,10 +40,17 @@ export default {
 		};
 	},
 	components : {
+        tabbar,
 		topbar,
 		scrollView,
 	},
     methods : {
+        go ( path ) {
+			this.$router.go({
+                path,
+                append : true,
+            });
+		},
         reload () {
             this.$root.display = false;
             app.reload();
@@ -106,8 +120,8 @@ export default {
 </script>
 
 <template>
-    <div class="test page">
-        <topbar v-bind:title.once="title"></topbar>
+    <div v-bind:style="{ 'padding-top' : topbarHeight, 'padding-bottom' : tabbarHeight }">
+        <topbar v-bind:title.once="title" v-bind:height.sync="topbarHeight"></topbar>
         <scroll-view>
             <div class="page-logo">logo</div>
             <div class="page-content">
@@ -146,7 +160,7 @@ export default {
                 </div>
                 <div class="weui-cells__title">Language</div>
                 <div class="weui-cells">
-                    <div class="weui-cell weui-cell_access">
+                    <div class="weui-cell weui-cell_access" v-touch:tap="go('select-language')">
                         <div class="weui-cell__bd">
                             <p>Select Language</p>
                         </div>
@@ -185,7 +199,7 @@ export default {
                 </div>
                 <div class="weui-cells__title">Version</div>
                 <div class="weui-cells">
-                    <div class="weui-cell weui-cell_access">
+                    <div class="weui-cell weui-cell_access" v-touch:tap="go('select-version')">
                         <div class="weui-cell__bd">
                             <p>Select Version</p>
                         </div>
@@ -198,15 +212,13 @@ export default {
                         <div class="weui-media-box weui-media-box_text" v-for="(version, logs) in changelog">
                             <h4 class="weui-media-box__title">{{ version }}</h4>
                             <p class="weui-media-box__desc" v-for="detail in logs">- {{ detail }}</p>
-                            <!-- <p class="weui-media-box__desc">
-                                <p v-for="detail in logs"><span>- {{ detail }}</span></p>
-                            </p> -->
                         </div>
                     </div>
                 </div>
                 <div class="page-blank"></div>
             </div>
         </scroll-view>
+        <tabbar v-bind:height.sync="tabbarHeight"></tabbar>
     </div>
 </template>
 
