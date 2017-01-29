@@ -39,6 +39,7 @@ export default {
 		overflow: hidden;
         position: relative;
 		background-color: $scroll-view-background-color;
+        z-index: 1;
 	}
 	.scroll-view-container {
 		width: 100%;
