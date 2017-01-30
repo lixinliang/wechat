@@ -1,8 +1,6 @@
 {
   "package/1.0.0": "/Users/lixinliang/GitHub/wechat/src/package/1.0.0/index.js",
-  "package/1.0.1": "/Users/lixinliang/GitHub/wechat/src/package/1.0.1/index.js",
-  "package/1.0.2": "/Users/lixinliang/GitHub/wechat/src/package/1.0.2/index.js",
-  "base/micro-definition": "/Users/lixinliang/GitHub/wechat/src/entry/micro-definition.js",
-  "base/micro-storage": "/Users/lixinliang/GitHub/wechat/src/entry/micro-storage.js",
-  "base/sdk": "/Users/lixinliang/GitHub/wechat/src/entry/sdk.js"
+  "micro-definition": "/Users/lixinliang/GitHub/wechat/src/entry/micro-definition.js",
+  "micro-storage": "/Users/lixinliang/GitHub/wechat/src/entry/micro-storage.js",
+  "sdk": "/Users/lixinliang/GitHub/wechat/src/entry/sdk.js"
 }
