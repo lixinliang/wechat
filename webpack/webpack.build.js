@@ -6,16 +6,17 @@ let fse = require('fs-extra');
 let moment = require('moment');
 let webpack = require('webpack');
 let autoprefixer = require('autoprefixer');
+let CopyWebpackPlugin = require('copy-webpack-plugin');
 let HtmlWebpackPlugin = require('html-webpack-plugin');
+let CleanWebpackPlugin = require('clean-webpack-plugin');
 let ExtractTextWebpackPlugin = require('extract-text-webpack-plugin');
-let HtmlReplaceWebpackPlugin = require('html-replace-webpack-plugin');
 let HtmlInlineSourceWebpackPlugin = require('html-inline-source-webpack-plugin');
 
 const entry = require('./webpack.entry.json');
 const packageJson = require('../package.json');
 
 const alias = {};
-const imageSize = 10240;
+const imageSize = 10240 * 2;
 const sourcePath = path.join(__dirname, '../src');
 const constant = {
     NODE_ENV : 'production',
@@ -39,6 +40,14 @@ process.argv.forEach(( param ) => {
         process.argv[key] = value;
     }
 });
+
+let version = ['x', 'x', 'x'];
+const regexp = /^((^|\.)(0|([1-9](\d+)?))){1,3}$/;
+if (process.argv.version && regexp.test(process.argv.version)) {
+    process.argv.version.split('.').forEach(( value, index ) => {
+        version[index] = value;
+    });
+}
 
 let config = {
     entry,
@@ -70,7 +79,7 @@ let config = {
             },
             {
                 test : /\.(png|jpg|gif|svg)$/,
-                loader : `url?limit=${ imageSize }&name=../img/[name].[ext]?[hash]`,
+                loader : `url?limit=${ imageSize }&name=${ process.argv.build == 'js' ? '../' : '' }img/[name].[ext]?[hash]`,
             },
             {
                 test : /\.css$/,
@@ -123,9 +132,10 @@ let config = {
     },
 };
 
+let plugins = config.plugins;
 if (process.argv.build == 'js') {
     if (process.argv.uglify) {
-        config.plugins.unshift(new webpack.optimize.UglifyJsPlugin({
+        plugins.unshift(new webpack.optimize.UglifyJsPlugin({
             compress : {
                 warnings : false,
             },
@@ -133,9 +143,13 @@ if (process.argv.build == 'js') {
                 comments : false,
             },
         }));
+    } else {
+        plugins.unshift(new CleanWebpackPlugin(['dist'], {
+            root : path.join(__dirname, '..'),
+        }));
     }
 } else {
-    config.plugins.unshift(new webpack.optimize.UglifyJsPlugin({
+    plugins.unshift(new webpack.optimize.UglifyJsPlugin({
         compress : {
             warnings : false,
         },
@@ -143,11 +157,45 @@ if (process.argv.build == 'js') {
             comments : false,
         },
     }));
-    config.plugins.push(new ExtractTextWebpackPlugin('css/[name].css'));
+    plugins.unshift(new CopyWebpackPlugin((() => {
+        let result = [];
+        fs.readdirSync(sourcePath).forEach(( filename ) => {
+            let file = path.join(sourcePath, filename);
+            if (filename[0] === '.') {
+                return;
+            }
+            let stats = fs.statSync(file);
+            if (stats.isDirectory()) {
+                if (filename == 'entry') {
+                    return;
+                }
+                if (filename == 'package') {
+                    return;
+                }
+            }
+            if (stats.isFile()) {
+                if (path.extname(file) == '.html') {
+                    return;
+                }
+                if (path.extname(file) == '.appcache') {
+                    return;
+                }
+            }
+            result.push({
+                from : file,
+                to : filename,
+            });
+        });
+        return result;
+    })()));
+    plugins.unshift(new CleanWebpackPlugin(['dist'], {
+        root : path.join(__dirname, '..'),
+    }));
+    plugins.push(new ExtractTextWebpackPlugin('css/[name].css'));
     fs.readdirSync(sourcePath).forEach(( filename ) => {
         let template = path.join(sourcePath, filename);
         if (/\.(appcache|html)$/.test(filename)) {
-            config.plugins.push(new HtmlWebpackPlugin({
+            plugins.push(new HtmlWebpackPlugin({
                 minify : false,
                 inject : false,
                 filename,
@@ -155,15 +203,70 @@ if (process.argv.build == 'js') {
             }));
         }
     });
-    let result = [];
-    Object.keys(constant).forEach(( key ) => {
-        result.push({
-            pattern : `@${ key }`,
-            replacement : constant[key],
+    plugins.push(new HtmlInlineSourceWebpackPlugin(() => {
+        let distPath = path.join(sourcePath, '../dist');
+        fse.writeJsonSync(path.join(distPath, 'package.json'), getPackageJson());
+        fs.readdirSync(path.join(distPath, 'js', 'package')).forEach(( filename ) => {
+            let jsPath = path.join(distPath, 'js', 'package', filename);
+            let cssPath = path.join(distPath, 'css', 'package', `${ path.basename(filename, '.js') }.css`);
+            fse.copySync(jsPath, path.join(distPath, 'package', filename));
+            fse.copySync(cssPath, path.join(distPath, 'package', `${ path.basename(filename, '.js') }.css`));
+            // let js = fs.readFileSync(jsPath, 'utf8');
+            // let css = fs.readFileSync(cssPath, 'utf8');
+            // fs.writeFileSync(path.join(distPath, 'package', filename), js, 'utf8');
+            // fs.writeFileSync(path.join(distPath, 'package', `${ path.basename(filename, '.js') }.css`), css, 'utf8');
         });
+        fse.remove(path.join(distPath, 'js'));
+        fse.remove(path.join(distPath, 'css'));
+    }));
+}
+
+function getPackageJson () {
+
+    if (getPackageJson.result) {
+        return getPackageJson.result;
+    }
+
+    let result = {};
+
+    let version = ['x', 'x', 'x'];
+    const regexp = /^((^|\.)(0|([1-9](\d+)?))){1,3}$/;
+    if (process.argv.version && regexp.test(process.argv.version)) {
+        process.argv.version.split('.').forEach(( value, index ) => {
+            version[index] = value;
+        });
+    }
+
+    let versionRegexp = version.slice();
+    versionRegexp.forEach(( value, index ) => {
+        if (value === 'x') {
+            versionRegexp[index] = '(0|[1-9](\\d+)?)';
+        }
     });
-    config.plugins.push(new HtmlReplaceWebpackPlugin(result));
-    config.plugins.push(new HtmlInlineSourceWebpackPlugin());
+    versionRegexp = new RegExp('^' + versionRegexp.join('\\.') + '$');
+
+    let packagePath = path.join(sourcePath, 'package');
+    fs.readdirSync(packagePath).forEach(( packageVersion ) => {
+        let packageVersionJs = path.join(packagePath, packageVersion, 'index.js');
+        let packageVersionJson = path.join(packagePath, packageVersion, 'package.json');
+        if (fs.existsSync(packageVersionJson) && fs.statSync(packageVersionJson).isFile()) {
+            if (versionRegexp.test(packageVersion)) {
+                result[packageVersion] = fse.readJsonSync(packageVersionJson);
+                if (!result[packageVersion]['timestamp']) {
+                    result[packageVersion]['timestamp'] = +new Date;
+                    fse.writeJsonSync(packageVersionJson, result[packageVersion]);
+                }
+            } else {
+                let json = fse.readJsonSync(packageVersionJson);
+                if (json['timestamp']) {
+                    result[packageVersion] = json;
+                }
+            }
+        }
+    });
+
+    return getPackageJson.result = result;
+
 }
 
 module.exports = config;
