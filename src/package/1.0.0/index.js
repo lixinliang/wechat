@@ -4,13 +4,13 @@ import 'weui';
 // vue系列
 import Vue from 'vue';
 import VueTouch from 'vue-touch';
+import VuePseudo from 'vue-pseudo';
 import VueRouter from 'vue-router';
-import VuePseudo from './modules/vue-pseudo.js';
 
 // 注册插件
 Vue.use(VueTouch);
-Vue.use(VueRouter);
 Vue.use(VuePseudo);
+Vue.use(VueRouter);
 
 // 组件
 import app from './components/app.vue';
@@ -24,26 +24,35 @@ router.map({
     '/chats' : {
 		component : test,
 	},
+    '/chats/*view' : {
+		component : test,
+	},
 	'/contacts' : {
+		component : test,
+	},
+    '/contacts/*view' : {
 		component : test,
 	},
 	'/discover' : {
 		component : test,
 	},
+    '/discover/*view' : {
+		component : test,
+	},
 	'/me' : {
+		component : test,
+	},
+    '/me/*view' : {
 		component : test,
 	},
     '/error' : {
 		component : test,
 	},
-    '/test' : {
-		component : test,
-	},
 });
 
 router.redirect({
-  '/' : '/chats',
-  '*' : '/error',
+    '/' : '/chats',
+    '*' : '/error',
 });
 
 router.start(app, 'app');
